@@ -19,5 +19,8 @@ namespace InventoryBillingSystem.Models
         // Navigation
         public ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
 
+        public string? ImagePath { get; set; }
+
+
     }
 }
