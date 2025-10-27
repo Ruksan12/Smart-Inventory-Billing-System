@@ -9,15 +9,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace InventoryBillingSystem.Areas.Admin.Contollers
+namespace InventoryBillingSystem.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class ProductContoller : Controller
+    public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public ProductContoller(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public ProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
@@ -30,9 +30,9 @@ namespace InventoryBillingSystem.Areas.Admin.Contollers
         }
 
         //GET: Admin/Procducts/Create
-        public IActionResult Create()
+        public async Task <IActionResult> Create()
         {
-            ViewBag.Suppliers = _context.Suppliers.ToListAsync();
+            ViewBag.Suppliers = await _context.Suppliers.ToListAsync();
             return View();
         }
 
@@ -59,8 +59,9 @@ namespace InventoryBillingSystem.Areas.Admin.Contollers
                 }
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            ViewBag.Suppliers = _context.Suppliers.ToListAsync();
+            ViewBag.Suppliers =await _context.Suppliers.ToListAsync();
             return View(product);
         }
 
@@ -76,7 +77,7 @@ namespace InventoryBillingSystem.Areas.Admin.Contollers
             {
                 return NotFound();
             }
-            ViewBag.Suppliers = _context.Suppliers.ToListAsync();
+            ViewBag.Suppliers = await _context.Suppliers.ToListAsync();
             return View(product);
         }
 
@@ -119,7 +120,7 @@ namespace InventoryBillingSystem.Areas.Admin.Contollers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Suppliers = _context.Suppliers.ToList();
+            ViewBag.Suppliers =_context.Suppliers.ToList();
             return View(product);
         }
 

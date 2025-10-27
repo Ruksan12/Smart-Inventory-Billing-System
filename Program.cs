@@ -1,4 +1,4 @@
-using InventoryBillingSystem.Data;
+﻿using InventoryBillingSystem.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace InventoryBillingSystem
             using (var scope = app.Services.CreateScope())
             {
                 var Services = scope.ServiceProvider;
-                await CreateRoles(Services);
+                await CreateRolesAndAdminUser(Services);
             }
 
             // Configure the HTTP request pipeline.
@@ -50,8 +50,14 @@ namespace InventoryBillingSystem
             app.UseAuthorization();
 
             app.MapControllerRoute(
+                name: "areas",
+                pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+            app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
 
             app.MapRazorPages();
 
@@ -59,16 +65,37 @@ namespace InventoryBillingSystem
             app.Run();
         }
 
-        public static async Task CreateRoles(IServiceProvider serviceProvider)
+        public static async Task CreateRolesAndAdminUser(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            string[] roleNames = { "Admin", "Cashier" };
+            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-            foreach (var roleName in roleNames)
+            // Ensure roles exist
+            string[] roles = { "Admin", "Cashier" };
+            foreach (var role in roles)
             {
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
+            }
+
+            // Create default Admin user
+            string adminEmail = "admin@demo.com";
+            string adminPassword = "Admin@123";
+
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
+            {
+                adminUser = new IdentityUser
                 {
-                    if (!await roleManager.RoleExistsAsync(roleName))
-                        await roleManager.CreateAsync(new IdentityRole(roleName));
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
         }
